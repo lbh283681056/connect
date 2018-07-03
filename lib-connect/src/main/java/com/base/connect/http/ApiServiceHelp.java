@@ -26,11 +26,17 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * 网络访问基类
  */
 public class ApiServiceHelp {
+
+    public static int load_success_code = 1;
     // 网络访问超时时间
 //连接时长，单位：毫秒
     public static final int CONNECT_TIME_OUT = 10;
     //读超时长，单位：毫秒
     public static final int READ_TIME_OUT = 10;
+
+    public static void setLoadSuccessCode(int loadSuccessCode){
+        load_success_code = loadSuccessCode;
+    }
     /**
      * 未设置为设置超时json解析
      *
@@ -95,6 +101,7 @@ public class ApiServiceHelp {
     public static Retrofit getUrlRetrofit(String baseUrl, OkHttpClient client, Converter.Factory factory) {
         return retrofitBuilder(baseUrl)
                 .addConverterFactory(factory)
+                .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
                 .client(client)
                 .build();
     }
@@ -147,7 +154,7 @@ public class ApiServiceHelp {
                             if (baseResultWrapper == null || baseResultWrapper.code == null) {
                                 throw new ApiExection(ApiExection.ERROR_CODE);
                             }
-                            if (baseResultWrapper.code != 1) {
+                            if (baseResultWrapper.code != load_success_code) {
                                 if (!TextUtils.isEmpty(baseResultWrapper.msg)) {
                                     Toast.makeText(BaseApplication.getInstance(), baseResultWrapper.msg, Toast.LENGTH_LONG).show();
                                 }
