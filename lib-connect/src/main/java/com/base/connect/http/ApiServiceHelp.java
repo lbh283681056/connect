@@ -6,6 +6,7 @@ import android.widget.Toast;
 
 
 import com.base.code.application.BaseApplication;
+import com.base.connect.http.bean.BaseResultInfo;
 import com.base.connect.http.bean.BaseResultWrapper;
 
 import java.util.concurrent.TimeUnit;
@@ -34,13 +35,21 @@ public class ApiServiceHelp {
     //读超时长，单位：毫秒
     public static final int READ_TIME_OUT = 10;
 
-    public static void setLoadSuccessCode(int loadSuccessCode){
+    private static ICallBack mCallBack;
+
+    public static void setCallBack(ICallBack mCallBack) {
+        ApiServiceHelp.mCallBack = mCallBack;
+    }
+
+    public static void setLoadSuccessCode(int loadSuccessCode) {
         load_success_code = loadSuccessCode;
     }
+
     /**
      * 未设置为设置超时json解析
-     *
+     * <p>
      * 属性 baseUrl
+     *
      * @return
      */
     //基础的设置
@@ -52,8 +61,9 @@ public class ApiServiceHelp {
 
     /**
      * 默认的json解析与超时
-     *
+     * <p>
      * 属性 baseUrl
+     *
      * @return
      */
     public static Retrofit getUrlRetrofit(String baseUrl) {
@@ -62,8 +72,9 @@ public class ApiServiceHelp {
 
     /**
      * 默认的json解析
-     *
+     * <p>
      * 属性 baseUrl
+     *
      * @return
      */
     public static Retrofit getUrlRetrofit(String baseUrl, long timeout) {
@@ -79,9 +90,10 @@ public class ApiServiceHelp {
 
     /**
      * 默认的json解析
-     *
+     * <p>
      * 属性 baseUrl 基本的url
      * 属性 client  okhttp 对象
+     *
      * @return
      */
     public static Retrofit getUrlRetrofit(String baseUrl, OkHttpClient client) {
@@ -93,9 +105,10 @@ public class ApiServiceHelp {
 
     /**
      * 默认的json解析
-     *
+     * <p>
      * 属性 baseUrl 基本的url
      * 属性 client  okhttp 对象
+     *
      * @return
      */
     public static Retrofit getUrlRetrofit(String baseUrl, OkHttpClient client, Converter.Factory factory) {
@@ -115,7 +128,14 @@ public class ApiServiceHelp {
     public static ObservableTransformer applySchedulers() {
         return schedulersTransformer;
     }
-
+    /**
+     * 数据验证返回只有data的数据
+     *
+     * @return
+     */
+    public static ObservableTransformer applySchedulersForResultInfo() {
+        return schedulersTransformerForResultInfo;
+    }
     /**
      * 不验证数据
      *
@@ -155,8 +175,12 @@ public class ApiServiceHelp {
                                 throw new ApiExection(ApiExection.ERROR_CODE);
                             }
                             if (baseResultWrapper.code != load_success_code) {
-                                if (!TextUtils.isEmpty(baseResultWrapper.msg)) {
-                                    Toast.makeText(BaseApplication.getInstance(), baseResultWrapper.msg, Toast.LENGTH_LONG).show();
+                                if (mCallBack != null) {
+                                    mCallBack.error(baseResultWrapper);
+                                } else {
+                                    if (!TextUtils.isEmpty(baseResultWrapper.msg)) {
+                                        Toast.makeText(BaseApplication.getInstance(), baseResultWrapper.msg, Toast.LENGTH_LONG).show();
+                                    }
                                 }
                                 return Observable.error(new ApiThrowable(baseResultWrapper.code));
                             }
@@ -168,7 +192,42 @@ public class ApiServiceHelp {
 
     };
 
+    /**
+     * 这个说白了就是封装一些统rx操作一的
+     */
+    private static final ObservableTransformer schedulersTransformerForResultInfo = new ObservableTransformer() {
+        @Override
+        public ObservableSource apply(Observable upstream) {
+            return upstream
+                    .subscribeOn(Schedulers.io())
+                    .retry(3)
+                    .unsubscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+//                         .map(new ApiResultVerifyFactory.ApiResultVerify())
+                    .flatMap(new Function() {
+                        @Override
+                        public Object apply(Object o) throws Exception {
+                            BaseResultInfo baseResultWrapper = (BaseResultInfo) o;
+                            if (baseResultWrapper == null || baseResultWrapper.code == null) {
+                                throw new ApiExection(ApiExection.ERROR_CODE);
+                            }
+                            if (baseResultWrapper.code != load_success_code) {
+                                if (mCallBack != null) {
+                                    mCallBack.error(baseResultWrapper);
+                                } else {
+                                    if (!TextUtils.isEmpty(baseResultWrapper.msg)) {
+                                        Toast.makeText(BaseApplication.getInstance(), baseResultWrapper.msg, Toast.LENGTH_LONG).show();
+                                    }
+                                }
+                                return Observable.error(new ApiThrowable(baseResultWrapper.code));
+                            }
+                            return Observable.just(baseResultWrapper.data);
+                        }
+                    });
+        }
 
+
+    };
     //这个说白了就是封装一些统rx操作一的
     private static final ObservableTransformer schedulersTransformerNoVerifyNoRetry = new ObservableTransformer() {
         @Override

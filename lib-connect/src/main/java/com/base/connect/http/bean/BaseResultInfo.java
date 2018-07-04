@@ -1,21 +1,20 @@
 package com.base.connect.http.bean;
 
 import android.os.Parcel;
-import android.os.Parcelable;
 
 import com.google.gson.annotations.SerializedName;
 
-public class BaseResultWrapper implements Parcelable {
-    @SerializedName(value = "msg",alternate = {"Msg"})
-    public String msg;
-    @SerializedName(value = "code",alternate = {"Code"})
-    public Integer code;
-//    @SerializedName(value = "sign",alternate = {"Sign"})
-//    public String sign;
-//    @SerializedName(value = "r",alternate = {"R"})
-//    public int r;
+public class BaseResultInfo extends BaseResultWrapper {
 
-    public BaseResultWrapper() {
+
+    @SerializedName(value = "sign",alternate = {"Sign"})
+    public String sign;
+    @SerializedName(value = "r",alternate = {"R"})
+    public int r;
+    @SerializedName(value = "data",alternate = {"Data"})
+    public String data;
+
+    public BaseResultInfo() {
     }
 
     @Override
@@ -25,24 +24,28 @@ public class BaseResultWrapper implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeString(this.msg);
-        dest.writeValue(this.code);
+        super.writeToParcel(dest, flags);
+        dest.writeString(this.sign);
+        dest.writeInt(this.r);
+        dest.writeString(this.data);
     }
 
-    protected BaseResultWrapper(Parcel in) {
-        this.msg = in.readString();
-        this.code = (Integer) in.readValue(Integer.class.getClassLoader());
+    protected BaseResultInfo(Parcel in) {
+        super(in);
+        this.sign = in.readString();
+        this.r = in.readInt();
+        this.data = in.readString();
     }
 
-    public static final Creator<BaseResultWrapper> CREATOR = new Creator<BaseResultWrapper>() {
+    public static final Creator<BaseResultInfo> CREATOR = new Creator<BaseResultInfo>() {
         @Override
-        public BaseResultWrapper createFromParcel(Parcel source) {
-            return new BaseResultWrapper(source);
+        public BaseResultInfo createFromParcel(Parcel source) {
+            return new BaseResultInfo(source);
         }
 
         @Override
-        public BaseResultWrapper[] newArray(int size) {
-            return new BaseResultWrapper[size];
+        public BaseResultInfo[] newArray(int size) {
+            return new BaseResultInfo[size];
         }
     };
 }

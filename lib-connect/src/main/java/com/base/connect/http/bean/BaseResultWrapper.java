@@ -34,15 +34,4 @@ public class BaseResultWrapper implements Parcelable {
         this.code = (Integer) in.readValue(Integer.class.getClassLoader());
     }
 
-    public static final Creator<BaseResultWrapper> CREATOR = new Creator<BaseResultWrapper>() {
-        @Override
-        public BaseResultWrapper createFromParcel(Parcel source) {
-            return new BaseResultWrapper(source);
-        }
-
-        @Override
-        public BaseResultWrapper[] newArray(int size) {
-            return new BaseResultWrapper[size];
-        }
-    };
 }
