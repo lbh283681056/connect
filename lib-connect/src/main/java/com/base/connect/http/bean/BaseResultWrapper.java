@@ -6,7 +6,7 @@ import android.os.Parcelable;
 import com.google.gson.annotations.SerializedName;
 
 public class BaseResultWrapper implements Parcelable {
-    @SerializedName(value = "msg",alternate = {"Msg"})
+    @SerializedName(value = "msg",alternate = {"Msg","Message"})
     public String msg;
     @SerializedName(value = "code",alternate = {"Code"})
     public Integer code;
@@ -14,6 +14,7 @@ public class BaseResultWrapper implements Parcelable {
 //    public String sign;
 //    @SerializedName(value = "r",alternate = {"R"})
 //    public int r;
+
 
     public BaseResultWrapper() {
     }
@@ -34,4 +35,15 @@ public class BaseResultWrapper implements Parcelable {
         this.code = (Integer) in.readValue(Integer.class.getClassLoader());
     }
 
+    public static final Creator<BaseResultWrapper> CREATOR = new Creator<BaseResultWrapper>() {
+        @Override
+        public BaseResultWrapper createFromParcel(Parcel source) {
+            return new BaseResultWrapper(source);
+        }
+
+        @Override
+        public BaseResultWrapper[] newArray(int size) {
+            return new BaseResultWrapper[size];
+        }
+    };
 }
