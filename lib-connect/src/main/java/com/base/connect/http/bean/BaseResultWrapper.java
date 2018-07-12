@@ -10,10 +10,7 @@ public class BaseResultWrapper implements Parcelable {
     public String msg;
     @SerializedName(value = "code",alternate = {"Code"})
     public Integer code;
-//    @SerializedName(value = "sign",alternate = {"Sign"})
-//    public String sign;
-//    @SerializedName(value = "r",alternate = {"R"})
-//    public int r;
+
 
 
     public BaseResultWrapper() {
